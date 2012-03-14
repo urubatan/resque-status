@@ -21,10 +21,16 @@ module Resque
 
         # Get a status by UUID. Returns a Resque::Plugins::Status::Hash
         def self.get(uuid)
-          val = redis.get(status_key(uuid))
-          puts "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')} [resque-status] Trying to decode saved status hash for job #{uuid}: #{val.inspect}"
+          key = status_key(uuid)
+          val = redis.get(key)
+          puts "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')} [resque-status] Trying to decode saved status hash for key '#{key}': #{val.inspect}"
 
-          val ? Resque::Plugins::Status::Hash.new(uuid, decode(val)) : nil
+          begin
+            val ? Resque::Plugins::Status::Hash.new(uuid, decode(val)) : nil
+          rescue => e
+            puts "#{Time.now.strftime('%Y-%m%d %H:%M%:%S')} [resque-status] Failed to decode value: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
+            raise e
+          end
         end
 
         # set a status by UUID. <tt>messages</tt> can be any number of stirngs or hashes
