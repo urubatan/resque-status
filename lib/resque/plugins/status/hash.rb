@@ -22,6 +22,8 @@ module Resque
         # Get a status by UUID. Returns a Resque::Plugins::Status::Hash
         def self.get(uuid)
           val = redis.get(status_key(uuid))
+          puts "#{Time.now.strftime('%Y-%m-%d %H:%M:%S')} [resque-status] Trying to decode saved status hash for job #{uuid}: #{val.inspect}"
+
           val ? Resque::Plugins::Status::Hash.new(uuid, decode(val)) : nil
         end
 
